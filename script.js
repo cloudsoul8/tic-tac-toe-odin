@@ -1,12 +1,15 @@
 const gameBoard = (()=>{
-   const board = Array(9).fill('-')
+   let board = Array(9).fill('-')
    const setCell = (symbol, index) => {
       board[index] = symbol;
    }
    const getCell = (index) => {
       return board[index];
    }
-   return { setCell, getCell }
+   const reset = () => {
+      board = Array(9).fill('-')
+   }
+   return { setCell, getCell, reset, board }
 })();
 
 const Player = (n, s)=> {
@@ -18,6 +21,14 @@ const Player = (n, s)=> {
    return { makeTurn, symbol, name };
 }
 
+// const BotPlayer = (n, s) => {
+//    const { symbol, name } = Player(n, s)
+//    const makeTurn = (index) => {
+//       gameBoard.setCell(symbol, (Math.floor(Math.random() * 8) + 0))
+//    }
+//    return {makeTurn, symbol, name}
+// }
+
 const tictactoe = (()=>{
    let _moveNum = 0
    let _players = [];
@@ -26,6 +37,12 @@ const tictactoe = (()=>{
    let winner; // Player data type
 
    const initGame = (p1,p2) => {
+      _moveNum = 0
+      _turnOf = 0
+      gameEnd = ''
+      winner = ''
+      gameBoard.reset();
+
       _players.push(p1);
       _players.push(p2);
       displayController.init()
@@ -75,10 +92,12 @@ const tictactoe = (()=>{
 
 const displayController = (()=> {
    const boardDom = document.querySelector("#game-board");
-   const endDom = document.querySelector("#end-screen");
+   const endScreenDom = document.querySelector("#end-screen");
+   const endDom = document.querySelector("#end-dialog");
    let cellsDom;
 
    const init = () => {
+      clearDom();
       for (let i = 0; i < 9; i++) {
          const cell = document.createElement("div")
          cell.setAttribute("class", "cell")
@@ -86,6 +105,12 @@ const displayController = (()=> {
          boardDom.appendChild(cell)
       }
       cellsDom = boardDom.querySelectorAll(".cell")
+   }
+
+   const clearDom = ()=> {
+      boardDom.innerText = ''
+      cellsDom = ''
+      endScreenDom.style.visibility = 'hidden' 
    }
 
    const setCellDom = (index)=> {
@@ -101,22 +126,25 @@ const displayController = (()=> {
 
          cellsDom[index].appendChild(imageSymbol);
          updateDomIfEnd();
+         return true;
       }
-      
    }
 
    const updateDomIfEnd = ()=> {
       if (tictactoe.getGameEnd() === 'win') {
-         endDom.style.visibility = 'visible'
+         endScreenDom.style.visibility = 'visible'
          endDom.innerText = `${tictactoe.getWinner().name} wins!`
       }
       else if (tictactoe.getGameEnd() === 'draw' ){
-         endDom.style.visibility = 'visible'
+         endScreenDom.style.visibility = 'visible'
          endDom.innerText = "it's a draw..."
       }
    }
-   return { init }
+   return { init, setCellDom }
 })();
 
+function startGame() {
+   tictactoe.initGame(Player('Player 1', 'x'), Player('Player 2', 'o'));
+}
+// tictactoe.initGame(BotPlayer('Player 1', 'x'), BotPlayer('Bot', 'o'));
 tictactoe.initGame(Player('Player 1', 'x'), Player('Player 2', 'o'));
-
